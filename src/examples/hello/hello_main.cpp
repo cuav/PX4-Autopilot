@@ -44,13 +44,51 @@
 #include <px4_platform_common/init.h>
 #include <stdio.h>
 
+
+static uint32_t sram4_buf[2] locate_data(".sram4");
+
+uint32_t read_address_data(uint32_t address)
+{
+	return *(uint32_t *)address;
+}
+
 int PX4_MAIN(int argc, char **argv)
 {
 	px4::init(argc, argv, "hello");
 
 	printf("hello\n");
-	HelloExample hello;
-	hello.main();
+	//HelloExample hello;
+	//hello.main();
+
+	printf("/************** test start **************/\n");
+
+	printf("address %x val: %x \n", &sram4_buf[0], sram4_buf[0]);
+	printf("address %x val: %x \n", &sram4_buf[1], sram4_buf[1]);
+	uint32_t dd = 0x9876;
+
+	uint32_t address = 0x38000000;
+
+	for (uint32_t i = 0; i < 1024 / 4; i++) {
+		if (i % 16 == 0) {
+			printf("\n0x%x :", address);
+		}
+
+		uint32_t val = read_address_data(address);
+		printf("%08x ", val);
+		address += 4;
+	}
+
+	printf("\n");
+
+	sram4_buf[0] = 1222;
+	sram4_buf[1] = 4567;
+
+	printf("address %x val: %d \n", &sram4_buf[0], sram4_buf[0]);
+	printf("address %x val: %d \n", &sram4_buf[1], sram4_buf[1]);
+
+	printf("dd address %x val: %x \n", &dd, dd);
+
+	printf("/************** test end **************/\n");
 
 	printf("goodbye\n");
 	return 0;
