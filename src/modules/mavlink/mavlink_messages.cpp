@@ -79,6 +79,7 @@
 #include <uORB/topics/sensor_gps.h>
 #include <uORB/topics/sensor_mag.h>
 #include <uORB/topics/sensor_selection.h>
+#include <uORB/topics/sht31.h>
 #include <uORB/topics/telemetry_status.h>
 #include <uORB/topics/transponder_report.h>
 #include <uORB/topics/vehicle_air_data.h>
@@ -1330,6 +1331,65 @@ protected:
 		}
 
 		return false;
+	}
+};
+
+class MavlinkStreamSHT31 : public MavlinkStream
+{
+public:
+
+	const char *get_name() const override
+	{
+		return MavlinkStreamSHT31::get_name_static();
+	}
+
+	static constexpr const char *get_name_static()
+	{
+		return "SHT31_STATUS";
+	}
+
+	static constexpr uint16_t get_id_static()
+	{
+		return MAVLINK_MSG_ID_SHT31_OUTPUT_STATUS; //'MAVLINK_MSG_ID_SHT31_OUTPUT_STATUS' was not declared in this scope
+	}
+
+	uint16_t get_id() override
+	{
+		return get_id_static();
+	}
+
+	static MavlinkStream *new_instance(Mavlink *mavlink)
+	{
+		return new MavlinkStreamSHT31(mavlink);
+	}
+
+	unsigned get_size() override
+	{
+		return MAVLINK_MSG_ID_SHT31_OUTPUT_STATUS_LEN + MAVLINK_NUM_NON_PAYLOAD_BYTES;
+	}
+
+private:
+	uORB::Subscription _sht31_sub{ORB_ID(sht31)};
+
+	/* do not allow top copying this class */
+	MavlinkStreamSHT31(MavlinkStreamSHT31 &) = delete;
+	MavlinkStreamSHT31 &operator = (const MavlinkStreamSHT31 &) = delete;
+
+protected:
+	explicit MavlinkStreamSHT31(Mavlink *mavlink) : MavlinkStream(mavlink)
+	{}
+
+	bool send() override
+	{
+		sht31_s sht31{};
+		mavlink_sht31_output_status_t msg;
+		_sht31_sub.copy(&sht31);
+		msg.sht31_temp = sht31.temperature;
+		msg.sht31_humidity = sht31.humidity;
+
+		mavlink_msg_sht31_output_status_send_struct(_mavlink->get_channel(), &msg);
+
+		return true;
 	}
 };
 
@@ -3564,6 +3624,9 @@ static const StreamListItem streams_list[] = {
 #if defined(COMPONENT_INFORMATION_HPP)
 	create_stream_list_item<MavlinkStreamComponentInformation>(),
 #endif // COMPONENT_INFORMATION_HPP
+
+	create_stream_list_item<MavlinkStreamSHT31>(),
+
 #if defined(RAW_RPM_HPP)
 	create_stream_list_item<MavlinkStreamRawRpm>()
 #endif // RAW_RPM_HPP

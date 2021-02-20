@@ -1854,6 +1854,8 @@ Mavlink::configure_streams_to_default(const char *configure_single_stream)
 		break;
 	}
 
+	configure_stream_local("SHT31_STATUS", 5.0f);
+
 	if (configure_single_stream && !stream_configured && strcmp(configure_single_stream, "HEARTBEAT") != 0) {
 		// stream was not found, assume it is disabled by default
 		return configure_stream(configure_single_stream, 0.0f);
