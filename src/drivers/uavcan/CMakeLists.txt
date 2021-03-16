@@ -151,6 +151,7 @@ px4_add_module(
 		sensors/gnss.cpp
 		sensors/mag.cpp
 		sensors/rangefinder.cpp
+		sensors/sht31.cpp
 
 	DEPENDS
 		px4_uavcan_dsdlc
