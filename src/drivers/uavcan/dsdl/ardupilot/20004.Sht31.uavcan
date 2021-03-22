@@ -1,0 +1,6 @@
+#
+# support for SHT31 on UAVCAN
+#
+
+float16 temperature
+float16 humidity

@@ -153,6 +153,7 @@ px4_add_module(
 		sensors/rangefinder.cpp
 		sensors/accel.cpp
 		sensors/gyro.cpp
+		sensors/sht31.cpp
 
 	DEPENDS
 		px4_uavcan_dsdlc
