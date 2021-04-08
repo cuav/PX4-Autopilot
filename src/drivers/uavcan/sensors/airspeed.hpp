@@ -40,21 +40,27 @@
 #include "sensor_bridge.hpp"
 #include <drivers/drv_airspeed.h>
 #include <uORB/topics/airspeed.h>
-
+#include <lib/drivers/device/device.h>
 #include <uavcan/equipment/air_data/IndicatedAirspeed.hpp>
 #include <uavcan/equipment/air_data/TrueAirspeed.hpp>
 #include <uavcan/equipment/air_data/StaticTemperature.hpp>
 
-class UavcanAirspeedBridge : public UavcanSensorBridgeBase
+class UavcanAirspeedBridge : public UavcanSensorBridgeBase, public cdev::CDev
 {
 public:
 	static const char *const NAME;
 
 	UavcanAirspeedBridge(uavcan::INode &node);
+	~UavcanAirspeedBridge();
 
 	const char *get_name() const override { return NAME; }
 
 	int init() override;
+
+	int ioctl(device::file_t *filp, int cmd, unsigned long arg) override;
+
+	int _class_instance = -1;
+
 
 private:
 
@@ -83,5 +89,8 @@ private:
 
 	float _last_tas_m_s{0.0f};
 	float _last_outside_air_temp_k{0.0f};
+
+protected:
+	float _diff_pres_offset;
 
 };

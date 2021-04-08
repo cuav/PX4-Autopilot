@@ -45,6 +45,7 @@ AirspeedValidator::update_airspeed_validator(const airspeed_validator_update_dat
 {
 	// get indicated airspeed from input data (raw airspeed)
 	_IAS = input_data.airspeed_indicated_raw;
+	printf("_IAS = %f\n", (double)_IAS);
 
 	update_CAS_scale();
 	update_CAS_TAS(input_data.air_pressure_pa, input_data.air_temperature_celsius);
@@ -131,6 +132,8 @@ AirspeedValidator::update_CAS_TAS(float air_pressure_pa, float air_temperature_c
 {
 	_CAS = calc_CAS_from_IAS(_IAS, _CAS_scale);
 	_TAS = calc_TAS_from_CAS(_CAS, air_pressure_pa, air_temperature_celsius);
+	printf("AirspeedValidator.cpp:_CAS =  %f \n", (double)_CAS);
+	printf("AirspeedValidator.cpp:_TAS =  %f \n", (double)_TAS);
 }
 
 void

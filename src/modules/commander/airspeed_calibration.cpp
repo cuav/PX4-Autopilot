@@ -90,6 +90,8 @@ int do_airspeed_calibration(orb_advert_t *mavlink_log_pub)
 	bool paramreset_successful = false;
 	int  fd = px4_open(AIRSPEED0_DEVICE_PATH, 0);
 
+	printf("-----------------------------------------fd = %d---------------------------------\n", fd);
+
 	if (fd >= 0) {
 		if (PX4_OK == px4_ioctl(fd, AIRSPEEDIOCSSCALE, (long unsigned int)&airscale)) {
 			paramreset_successful = true;
