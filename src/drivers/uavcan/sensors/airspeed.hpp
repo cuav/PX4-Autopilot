@@ -59,7 +59,7 @@ public:
 
 	int ioctl(device::file_t *filp, int cmd, unsigned long arg) override;
 
-	int _class_instance = -1;
+	int _class_instance;
 
 
 private:

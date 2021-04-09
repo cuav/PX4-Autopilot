@@ -46,6 +46,7 @@ const char *const UavcanAirspeedBridge::NAME = "airspeed";
 UavcanAirspeedBridge::UavcanAirspeedBridge(uavcan::INode &node) :
 	UavcanSensorBridgeBase("uavcan_airspeed", ORB_ID(airspeed)),
 	CDev(AIRSPEED0_DEVICE_PATH),
+	_class_instance(-1),
 	_sub_ias_data(node),
 	_sub_tas_data(node),
 	_sub_oat_data(node)
