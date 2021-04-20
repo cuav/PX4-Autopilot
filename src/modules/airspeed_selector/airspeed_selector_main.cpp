@@ -344,7 +344,7 @@ AirspeedModule::Run()
 			if (_airspeed_subs[i].update(&airspeed_raw)) {
 
 				input_data.airspeed_indicated_raw = airspeed_raw.indicated_airspeed_m_s;
-				printf("asm:input_data.airspeed_indicated_raw = %f\n", (double)input_data.airspeed_indicated_raw);
+				// printf("asm:input_data.airspeed_indicated_raw = %f\n", (double)input_data.airspeed_indicated_raw);
 				input_data.airspeed_true_raw = airspeed_raw.true_airspeed_m_s;
 				input_data.airspeed_timestamp = airspeed_raw.timestamp;
 				input_data.air_temperature_celsius = airspeed_raw.air_temperature_celsius;
@@ -602,7 +602,7 @@ void AirspeedModule::select_airspeed_and_publish()
 	default:
 		airspeed_validated.indicated_airspeed_m_s = _airspeed_validator[_valid_airspeed_index - 1].get_IAS();
 		airspeed_validated.calibrated_airspeed_m_s = _airspeed_validator[_valid_airspeed_index - 1].get_CAS();
-		printf("default:airspeed_validated.calibrated_airspeed_m_s = %f\n", (double)airspeed_validated.calibrated_airspeed_m_s);
+		// printf("default:airspeed_validated.calibrated_airspeed_m_s = %f\n", (double)airspeed_validated.calibrated_airspeed_m_s);
 		airspeed_validated.true_airspeed_m_s = _airspeed_validator[_valid_airspeed_index - 1].get_TAS();
 		airspeed_validated.calibrated_ground_minus_wind_m_s = _ground_minus_wind_CAS;
 		airspeed_validated.true_ground_minus_wind_m_s = _ground_minus_wind_TAS;

@@ -205,6 +205,14 @@ MEASAirspeed::collect()
 	report.differential_pressure_raw_pa = diff_press_pa_raw - _diff_pres_offset;
 	report.device_id = _device_id.devid;
 
+	printf("MS4525:_diff_pres_offset = %f\n", (double)_diff_pres_offset);
+	printf("MS4525:diff_press_pa_raw = %f\n", (double)diff_press_pa_raw);
+
+	printf("MS4525:diff_pressure.differential_pressure_filtered_pa = %f\n",
+	       (double)report.differential_pressure_filtered_pa);
+	printf("MS4525:diff_pressure.differential_pressure_raw_pa = %f\n", (double)report.differential_pressure_raw_pa);
+
+
 	_airspeed_pub.publish(report);
 
 	ret = OK;

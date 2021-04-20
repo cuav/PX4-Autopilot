@@ -42,19 +42,26 @@
 #include <mathlib/math/filter/LowPassFilter2p.hpp>
 
 #include "sensor_bridge.hpp"
-
+#include "airspeed.hpp"
 #include <uavcan/equipment/air_data/RawAirData.hpp>
 
-class UavcanDifferentialPressureBridge : public UavcanSensorBridgeBase
+// class UavcanDifferentialPressureBridge : public UavcanSensorBridgeBase
+class UavcanDifferentialPressureBridge : public UavcanSensorBridgeBase, public cdev::CDev
 {
 public:
 	static const char *const NAME;
 
 	UavcanDifferentialPressureBridge(uavcan::INode &node);
 
+	~UavcanDifferentialPressureBridge();
+
 	const char *get_name() const override { return NAME; }
 
 	int init() override;
+
+	int ioctl(device::file_t *filp, int cmd, unsigned long arg) override;
+
+	int _class_instance;
 
 private:
 	float _diff_pres_offset{0.f};

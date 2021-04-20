@@ -168,7 +168,7 @@ float calc_IAS_corrected(enum AIRSPEED_COMPENSATION_MODEL pmodel, enum AIRSPEED_
 	// computed airspeed without correction for inflow-speed at tip of pitot-tube
 	const float airspeed_uncorrected = sqrtf(2.0f * dp_tot / CONSTANTS_AIR_DENSITY_SEA_LEVEL_15C);
 
-	printf("src/lib/airspeed/airspeed.cpp:dv = %f\n", (double)dv);
+	// printf("src/lib/airspeed/airspeed.cpp:dv = %f\n", (double)dv);
 	// corrected airspeed
 	const float airspeed_corrected = airspeed_uncorrected + dv;
 

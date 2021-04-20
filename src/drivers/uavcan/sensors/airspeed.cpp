@@ -45,22 +45,12 @@ const char *const UavcanAirspeedBridge::NAME = "airspeed";
 
 UavcanAirspeedBridge::UavcanAirspeedBridge(uavcan::INode &node) :
 	UavcanSensorBridgeBase("uavcan_airspeed", ORB_ID(airspeed)),
-	CDev(AIRSPEED0_DEVICE_PATH),
-	_class_instance(-1),
 	_sub_ias_data(node),
 	_sub_tas_data(node),
 	_sub_oat_data(node)
 {
-	/* register alternate interfaces if we have to */
-	_class_instance = register_class_devname(AIRSPEED_BASE_DEVICE_PATH);
 }
 
-UavcanAirspeedBridge::~UavcanAirspeedBridge()
-{
-	if (_class_instance != -1) {
-		unregister_class_devname(AIRSPEED_BASE_DEVICE_PATH, _class_instance);
-	}
-}
 
 int UavcanAirspeedBridge::init()
 {
@@ -120,20 +110,4 @@ UavcanAirspeedBridge::ias_sub_cb(const
 	report.air_temperature_celsius 	= _last_outside_air_temp_k + CONSTANTS_ABSOLUTE_NULL_CELSIUS;
 
 	publish(msg.getSrcNodeID().get(), &report);
-}
-
-
-int UavcanAirspeedBridge::ioctl(device::file_t *filp, int cmd, unsigned long arg)
-{
-	switch (cmd) {
-	case AIRSPEEDIOCSSCALE: {
-			struct airspeed_scale *s = (struct airspeed_scale *)arg;
-			_diff_pres_offset = s->offset_pa;
-			return OK;
-		}
-
-	default:
-		/* give it to the superclass */
-		return 0;
-	}
 }

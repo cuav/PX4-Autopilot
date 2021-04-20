@@ -367,8 +367,8 @@ void Sensors::diff_pres_poll()
 		}
 
 
-		printf("sensors.cpp:smodel = %d\n", smodel);
-		printf("sensors.cpp:_parameters.air_cmodel = %d\n", _parameters.air_cmodel);
+		// printf("sensors.cpp:smodel = %d\n", smodel);
+		// printf("sensors.cpp:_parameters.air_cmodel = %d\n", _parameters.air_cmodel);
 		/* don't risk to feed negative airspeed into the system */
 		airspeed.indicated_airspeed_m_s = calc_IAS_corrected((enum AIRSPEED_COMPENSATION_MODEL)
 						  _parameters.air_cmodel,
@@ -376,7 +376,7 @@ void Sensors::diff_pres_poll()
 						  diff_pres.differential_pressure_filtered_pa, air_data.baro_pressure_pa,
 						  air_temperature_celsius);
 
-		printf("sensors.cpp:airspeed.indicated_airspeed_m_s = %f\n", (double)airspeed.indicated_airspeed_m_s);
+		// printf("sensors.cpp:airspeed.indicated_airspeed_m_s = %f\n", (double)airspeed.indicated_airspeed_m_s);
 
 		airspeed.true_airspeed_m_s = calc_TAS_from_CAS(airspeed.indicated_airspeed_m_s, air_data.baro_pressure_pa,
 					     air_temperature_celsius); // assume that CAS = IAS as we don't have an CAS-scale here

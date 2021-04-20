@@ -47,8 +47,20 @@ const char *const UavcanDifferentialPressureBridge::NAME = "differential_pressur
 
 UavcanDifferentialPressureBridge::UavcanDifferentialPressureBridge(uavcan::INode &node) :
 	UavcanSensorBridgeBase("uavcan_differential_pressure", ORB_ID(differential_pressure)),
+	CDev(AIRSPEED0_DEVICE_PATH),
+	_class_instance(-1),
 	_sub_air(node)
 {
+	/* register alternate interfaces if we have to */
+	_class_instance = register_class_devname(AIRSPEED_BASE_DEVICE_PATH);
+}
+
+UavcanDifferentialPressureBridge::~UavcanDifferentialPressureBridge()
+{
+	if (_class_instance != -1) {
+		unregister_class_devname(AIRSPEED_BASE_DEVICE_PATH, _class_instance);
+	}
+
 }
 
 int UavcanDifferentialPressureBridge::init()
@@ -84,5 +96,29 @@ void UavcanDifferentialPressureBridge::air_sub_cb(const
 		.device_id = _device_id.devid
 	};
 
+	printf("_diff_pres_offset = %f\n", (double)_diff_pres_offset);
+	printf("diff_press_pa_raw = %f\n", (double)diff_press_pa);
+
+	printf("report.differential_pressure_raw_pa = %f\n", (double)report.differential_pressure_raw_pa);
+	printf("report.differential_pressure_filtered_pa = %f\n", (double)report.differential_pressure_filtered_pa);
+
+
 	publish(msg.getSrcNodeID().get(), &report);
+}
+
+
+int UavcanDifferentialPressureBridge::ioctl(device::file_t *filp, int cmd, unsigned long arg)
+{
+	switch (cmd) {
+	case AIRSPEEDIOCSSCALE: {
+			struct airspeed_scale *s = (struct airspeed_scale *)arg;
+			_diff_pres_offset = s->offset_pa;
+			printf("UavcanDifferentialPressureBridge::_diff_pres_offset = %f\n", (double)_diff_pres_offset);
+			return OK;
+		}
+
+	default:
+		/* give it to the superclass */
+		return 0;
+	}
 }
