@@ -90,7 +90,7 @@ int do_airspeed_calibration(orb_advert_t *mavlink_log_pub)
 	bool paramreset_successful = false;
 	int  fd = px4_open(AIRSPEED0_DEVICE_PATH, 0);
 
-	printf("-----------------------------------------fd = %d---------------------------------\n", fd);
+	// printf("-----------------------------------------fd = %d---------------------------------\n", fd);
 
 	if (fd >= 0) {
 		if (PX4_OK == px4_ioctl(fd, AIRSPEEDIOCSSCALE, (long unsigned int)&airscale)) {
@@ -137,6 +137,9 @@ int do_airspeed_calibration(orb_advert_t *mavlink_log_pub)
 
 		int poll_ret = px4_poll(fds, 1, 1000);
 
+// printf("poll_ret = %d\n",poll_ret);
+// printf("airspeed_calibration.cpp:diff_pres.differential_pressure_raw_pa = %f\n",
+// 			       (double)diff_pres.differential_pressure_raw_pa);
 		if (poll_ret) {
 			orb_copy(ORB_ID(differential_pressure), diff_pres_sub, &diff_pres);
 
@@ -155,6 +158,7 @@ int do_airspeed_calibration(orb_advert_t *mavlink_log_pub)
 			}
 
 			if (calibration_counter % (calibration_count / 20) == 0) {
+				printf("(calibration_count  = %d,calibration_counter = %d\n", calibration_count, calibration_counter);
 				calibration_log_info(mavlink_log_pub, CAL_QGC_PROGRESS_MSG, (calibration_counter * 80) / calibration_count);
 			}
 
@@ -168,11 +172,11 @@ int do_airspeed_calibration(orb_advert_t *mavlink_log_pub)
 	diff_pres_offset = diff_pres_offset / calibration_count;
 
 	if (PX4_ISFINITE(diff_pres_offset)) {
-		printf("PX4_ISFINITE(diff_pres_offset)\n");
+		// printf("PX4_ISFINITE(diff_pres_offset)\n");
 		int fd_scale = px4_open(AIRSPEED0_DEVICE_PATH, 0);
 		airscale.offset_pa = diff_pres_offset;
 
-		printf("airspeed_calibration.cpp:diff_pres_offset = %f\n", (double)diff_pres_offset);
+		// printf("airspeed_calibration.cpp:diff_pres_offset = %f\n", (double)diff_pres_offset);
 
 		if (fd_scale >= 0) {
 			if (PX4_OK != px4_ioctl(fd_scale, AIRSPEEDIOCSSCALE, (long unsigned int)&airscale)) {
@@ -200,14 +204,14 @@ int do_airspeed_calibration(orb_advert_t *mavlink_log_pub)
 		goto error_return;
 	}
 
-	printf("[cal] Offset of %d Pascal\n");
+	// printf("[cal] Offset of %d Pascal\n");
 	calibration_log_info(mavlink_log_pub, "[cal] Offset of %d Pascal", (int)diff_pres_offset);
 
 	/* wait 500 ms to ensure parameter propagated through the system */
 	px4_usleep(500 * 1000);
 
 	calibration_log_critical(mavlink_log_pub, "[cal] Blow across front of pitot without touching");
-	printf("[cal] Blow across front of pitot without touching\n");
+	// printf("[cal] Blow across front of pitot without touching\n");
 	calibration_counter = 0;
 
 	/* just take a few samples and make sure pitot tubes are not reversed, timeout after ~30 seconds */
@@ -223,7 +227,7 @@ int do_airspeed_calibration(orb_advert_t *mavlink_log_pub)
 		fds[0].events = POLLIN;
 
 		int poll_ret = px4_poll(fds, 1, 1000);
-		printf("airspeed_calibration.cpp:poll_ret = %d\n", poll_ret);
+		// printf("airspeed_calibration.cpp:poll_ret = %d\n", poll_ret);
 
 		if (poll_ret) {
 			orb_copy(ORB_ID(differential_pressure), diff_pres_sub, &diff_pres);
@@ -295,7 +299,7 @@ normal_return:
 	return result;
 
 error_return:
-	printf("error_return\n");
+	// printf("error_return\n");
 	result = PX4_ERROR;
 	goto normal_return;
 }

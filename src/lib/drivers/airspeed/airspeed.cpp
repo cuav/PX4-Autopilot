@@ -71,7 +71,11 @@ Airspeed::Airspeed(int bus, int bus_frequency, int address, unsigned conversion_
 
 Airspeed::~Airspeed()
 {
+	printf("Airspeed::~Airspeed()\n");
+	printf("Airspeed::~Airspeed():_class_instance = %d\n", _class_instance);
+
 	if (_class_instance != -1) {
+		printf("Airspeed::unregister_class_devname\n");
 		unregister_class_devname(AIRSPEED_BASE_DEVICE_PATH, _class_instance);
 	}
 
@@ -90,7 +94,7 @@ Airspeed::init()
 
 	/* register alternate interfaces if we have to */
 	_class_instance = register_class_devname(AIRSPEED_BASE_DEVICE_PATH);
-
+	printf("Airspeed::init():_class_instance = %d\n", _class_instance);
 	/* advertise sensor topic, measure manually to initialize valid report */
 	measure();
 
