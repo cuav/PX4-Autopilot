@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (c) 2020 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2021 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,48 +31,51 @@
  *
  ****************************************************************************/
 
-/**
- * @author Jacob Crabill <jacob@flyvoly.com>
- */
+#ifndef SHT31_HPP
+#define SHT31_HPP
 
-#pragma once
+#include <uORB/topics/sht31.h>
 
-#include <uORB/uORB.h>
-#include <uORB/topics/differential_pressure.h>
-#include <mathlib/math/filter/LowPassFilter2p.hpp>
 
-#include "sensor_bridge.hpp"
-#include <lib/drivers/device/device.h>
-#include <uavcan/equipment/air_data/RawAirData.hpp>
-
-class UavcanDifferentialPressureBridge : public UavcanSensorBridgeBase, public cdev::CDev
+class MavlinkStreamSHT31 : public MavlinkStream
 {
 public:
-	static const char *const NAME;
 
-	UavcanDifferentialPressureBridge(uavcan::INode &node);
+	static MavlinkStream *new_instance(Mavlink *mavlink) { return new MavlinkStreamSHT31(mavlink); }
 
-	~UavcanDifferentialPressureBridge();
+	static constexpr const char *get_name_static() { return "SHT31_STATUS"; }
+	static constexpr uint16_t get_id_static() { return MAVLINK_MSG_ID_SHT31_OUTPUT_STATUS; }
 
-	const char *get_name() const override { return NAME; }
+	const char *get_name() const override { return get_name_static(); }
+	uint16_t get_id() override { return get_id_static(); }
 
-	int init() override;
-
-	int ioctl(device::file_t *filp, int cmd, unsigned long arg) override;
-
-	int _class_instance;
+	unsigned get_size() override
+	{
+		return MAVLINK_MSG_ID_SHT31_OUTPUT_STATUS_LEN + MAVLINK_NUM_NON_PAYLOAD_BYTES;
+	}
 
 private:
-	float _diff_pres_offset{0.f};
+	explicit MavlinkStreamSHT31(Mavlink *mavlink) : MavlinkStream(mavlink) {}
 
-	math::LowPassFilter2p _filter{10.f, 1.1f}; /// Adapted from MS5525 driver
+	uORB::Subscription _sht31_sub{ORB_ID(sht31)};
 
-	void air_sub_cb(const uavcan::ReceivedDataStructure<uavcan::equipment::air_data::RawAirData> &msg);
+	/* do not allow top copying this class */
+	MavlinkStreamSHT31(MavlinkStreamSHT31 &) = delete;
+	MavlinkStreamSHT31 &operator = (const MavlinkStreamSHT31 &) = delete;
 
-	typedef uavcan::MethodBinder < UavcanDifferentialPressureBridge *,
-		void (UavcanDifferentialPressureBridge::*)
-		(const uavcan::ReceivedDataStructure<uavcan::equipment::air_data::RawAirData> &) >
-		AirCbBinder;
+	bool send() override
+	{
+		sht31_s sht31{};
+		mavlink_sht31_output_status_t msg;
+		_sht31_sub.copy(&sht31);
+		msg.sht31_temp = sht31.temperature;
+		msg.sht31_humidity = sht31.humidity;
 
-	uavcan::Subscriber<uavcan::equipment::air_data::RawAirData, AirCbBinder> _sub_air;
+		mavlink_msg_sht31_output_status_send_struct(_mavlink->get_channel(), &msg);
+
+		return true;
+	}
 };
+
+
+#endif

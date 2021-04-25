@@ -1,3 +1,20 @@
+// {
+//     "configurations": [
+//         {
+//             "name": "PX4",
+//             "includePath": [
+//                 "${workspaceFolder}/**"
+//             ],
+//             "defines": [],
+//             "macFrameworkPath": [],
+//             "configurationProvider": "ms-vscode.cmake-tools",
+//             "cppStandard": "c++14",
+//             "cStandard": "c11"
+//         }
+//     ],
+//     "version": 4
+// }
+
 {
     "configurations": [
         {
@@ -6,10 +23,11 @@
                 "${workspaceFolder}/**"
             ],
             "defines": [],
-            "macFrameworkPath": [],
-            "configurationProvider": "ms-vscode.cmake-tools",
-            "cppStandard": "c++14",
-            "cStandard": "c11"
+            "compilerPath": "/opt/gcc-arm-none-eabi-9-2020-q2-update/bin/arm-none-eabi-gcc",
+            "cStandard": "gnu11",
+            "cppStandard": "gnu++14",
+            "intelliSenseMode": "gcc-arm",
+            "compileCommands": "${workspaceFolder}/build/cuav_nora_default/compile_commands.json"
         }
     ],
     "version": 4

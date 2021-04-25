@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (c) 2020 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2021 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,48 +31,36 @@
  *
  ****************************************************************************/
 
-/**
- * @author Jacob Crabill <jacob@flyvoly.com>
- */
-
-#pragma once
-
-#include <uORB/uORB.h>
-#include <uORB/topics/differential_pressure.h>
-#include <mathlib/math/filter/LowPassFilter2p.hpp>
-
+#include <uORB/topics/sht31.h>
 #include "sensor_bridge.hpp"
-#include <lib/drivers/device/device.h>
-#include <uavcan/equipment/air_data/RawAirData.hpp>
+#include <cuav/equipment/atmos/Sht31.hpp>
 
-class UavcanDifferentialPressureBridge : public UavcanSensorBridgeBase, public cdev::CDev
+
+class UavcanSht31Bridge : public UavcanSensorBridgeBase
 {
 public:
 	static const char *const NAME;
 
-	UavcanDifferentialPressureBridge(uavcan::INode &node);
-
-	~UavcanDifferentialPressureBridge();
+	UavcanSht31Bridge(uavcan::INode &node);
 
 	const char *get_name() const override { return NAME; }
 
 	int init() override;
 
-	int ioctl(device::file_t *filp, int cmd, unsigned long arg) override;
-
-	int _class_instance;
-
 private:
-	float _diff_pres_offset{0.f};
+	float _temperature {0.0f};
+	float _humidity    {0.0f};
 
-	math::LowPassFilter2p _filter{10.f, 1.1f}; /// Adapted from MS5525 driver
 
-	void air_sub_cb(const uavcan::ReceivedDataStructure<uavcan::equipment::air_data::RawAirData> &msg);
+	void sht31_sub_cb(const uavcan::ReceivedDataStructure<cuav::equipment::atmos::Sht31> &msg);
 
-	typedef uavcan::MethodBinder < UavcanDifferentialPressureBridge *,
-		void (UavcanDifferentialPressureBridge::*)
-		(const uavcan::ReceivedDataStructure<uavcan::equipment::air_data::RawAirData> &) >
-		AirCbBinder;
+	typedef uavcan::MethodBinder < UavcanSht31Bridge *,
+		void (UavcanSht31Bridge::*)
+		(const uavcan::ReceivedDataStructure<cuav::equipment::atmos::Sht31> &) >
+		Sht31CbBinder;
 
-	uavcan::Subscriber<uavcan::equipment::air_data::RawAirData, AirCbBinder> _sub_air;
+	uavcan::Subscriber<cuav::equipment::atmos::Sht31, Sht31CbBinder> _sub_sht31;
 };
+
+
+
