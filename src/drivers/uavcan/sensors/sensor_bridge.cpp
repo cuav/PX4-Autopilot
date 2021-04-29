@@ -49,6 +49,7 @@
 #include "accel.hpp"
 #include "gyro.hpp"
 #include "cbat.hpp"
+#include "atmosphere.hpp"
 
 /*
  * IUavcanSensorBridge
@@ -59,6 +60,7 @@ void IUavcanSensorBridge::make_all(uavcan::INode &node, List<IUavcanSensorBridge
 	list.add(new UavcanMagnetometerBridge(node));
 	list.add(new UavcanGnssBridge(node));
 	list.add(new UavcanFlowBridge(node));
+	list.add(new UavcanAtmosBridge(node));
 
 	int32_t bat_monitor;
 	param_t _param_bat_monitor = param_find("UAVCAN_BAT_MON");

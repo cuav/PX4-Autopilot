@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (C) 2013 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2021 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,43 +31,36 @@
  *
  ****************************************************************************/
 
-/**
- * @file drv_airspeed.h
- *
- * Airspeed driver interface.
- *
- * @author Simon Wilks
- */
+#include <uORB/topics/atmos.h>
+#include "sensor_bridge.hpp"
+#include <cuav/equipment/atmos/Atmosphere.hpp>
 
-#ifndef _DRV_AIRSPEED_H
-#define _DRV_AIRSPEED_H
 
-#include <stdint.h>
-#include <sys/ioctl.h>
+class UavcanAtmosBridge : public UavcanSensorBridgeBase
+{
+public:
+	static const char *const NAME;
 
-#include "drv_sensor.h"
-#include "drv_orb_dev.h"
+	UavcanAtmosBridge(uavcan::INode &node);
 
-#define AIRSPEED_BASE_DEVICE_PATH "/dev/airspeed"
-#define AIRSPEED0_DEVICE_PATH	"/dev/airspeed0"
-#define AIRSPEED1_DEVICE_PATH	"/dev/airspeed1"
+	const char *get_name() const override { return NAME; }
 
-/*
- * ioctl() definitions
- *
- * Airspeed drivers also implement the generic sensor driver
- * interfaces from drv_sensor.h
- */
+	int init() override;
 
-#define _AIRSPEEDIOCBASE		(0x7700)
-#define __AIRSPEEDIOC(_n)		(_PX4_IOC(_AIRSPEEDIOCBASE, _n))
+private:
+	float _temperature {0.0f};
+	float _humidity    {0.0f};
 
-#define AIRSPEEDIOCSSCALE		__AIRSPEEDIOC(0)
 
-/** airspeed scaling factors; out = (in * Vscale) + offset */
-struct airspeed_scale {
-	float	offset_pa;
-	float	scale;
+	void atmos_sub_cb(const uavcan::ReceivedDataStructure<cuav::equipment::atmos::Atmosphere> &msg);
+
+	typedef uavcan::MethodBinder < UavcanAtmosBridge *,
+		void (UavcanAtmosBridge::*)
+		(const uavcan::ReceivedDataStructure<cuav::equipment::atmos::Atmosphere> &) >
+		AtmosCbBinder;
+
+	uavcan::Subscriber<cuav::equipment::atmos::Atmosphere, AtmosCbBinder> _sub_atmos;
 };
 
-#endif /* _DRV_AIRSPEED_H */
+
+

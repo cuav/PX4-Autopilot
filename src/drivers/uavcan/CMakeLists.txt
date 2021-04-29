@@ -155,6 +155,7 @@ px4_add_module(
 		sensors/accel.cpp
 		sensors/gyro.cpp
 		sensors/cbat.cpp
+		sensors/atmosphere.cpp
 
 	DEPENDS
 		px4_uavcan_dsdlc

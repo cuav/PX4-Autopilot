@@ -91,6 +91,8 @@ Airspeed::init()
 	/* register alternate interfaces if we have to */
 	_class_instance = register_class_devname(AIRSPEED_BASE_DEVICE_PATH);
 
+	printf("I2C airspeed.cpp _class_instance = %d \n", _class_instance);
+
 	/* advertise sensor topic, measure manually to initialize valid report */
 	measure();
 

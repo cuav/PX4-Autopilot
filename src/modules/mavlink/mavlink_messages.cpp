@@ -111,6 +111,7 @@
 #include "streams/VFR_HUD.hpp"
 #include "streams/VIBRATION.hpp"
 #include "streams/WIND_COV.hpp"
+#include "streams/ATMOS.hpp"
 
 #if !defined(CONSTRAINED_FLASH)
 # include "streams/ADSB_VEHICLE.hpp"
@@ -528,6 +529,9 @@ static const StreamListItem streams_list[] = {
 #if defined(LINK_NODE_STATUS_HPP)
 	create_stream_list_item<MavlinkStreamLinkNodeStatus>(),
 #endif // LINK_NODE_STATUS_HPP
+#if defined(ATMOS_HPP)
+	create_stream_list_item<MavlinkStreamATMOS>(),
+#endif // ATMOS_HPP
 #if defined(STORAGE_INFORMATION_HPP)
 	create_stream_list_item<MavlinkStreamStorageInformation>(),
 #endif // STORAGE_INFORMATION_HPP
