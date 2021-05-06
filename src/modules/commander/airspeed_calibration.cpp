@@ -169,6 +169,8 @@ int do_airspeed_calibration(orb_advert_t *mavlink_log_pub)
 				goto error_return;
 			}
 
+			printf("CAL_QGC_PROGRESS_MSG\n");
+
 			if (calibration_counter % (calibration_count / 20) == 0) {
 				calibration_log_info(mavlink_log_pub, CAL_QGC_PROGRESS_MSG, (calibration_counter * 80) / calibration_count);
 			}
