@@ -1,0 +1,6 @@
+#
+# support for atmospheric sensors on UAVCAN
+#
+
+float32 temperature
+float32 humidity

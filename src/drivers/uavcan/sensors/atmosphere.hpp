@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (c) 2020 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2021 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,48 +31,36 @@
  *
  ****************************************************************************/
 
-/**
- * @author Jacob Crabill <jacob@flyvoly.com>
- */
-
-#pragma once
-
-#include <uORB/uORB.h>
-#include <uORB/topics/differential_pressure.h>
-#include <mathlib/math/filter/LowPassFilter2p.hpp>
-#include <lib/drivers/device/device.h>
+#include <uORB/topics/atmos.h>
 #include "sensor_bridge.hpp"
+#include <cuav/equipment/atmos/Atmosphere.hpp>
 
-#include <uavcan/equipment/air_data/RawAirData.hpp>
 
-class UavcanDifferentialPressureBridge : public UavcanSensorBridgeBase, public cdev::CDev
+class UavcanAtmosBridge : public UavcanSensorBridgeBase
 {
 public:
 	static const char *const NAME;
 
-	UavcanDifferentialPressureBridge(uavcan::INode &node);
-
-	~UavcanDifferentialPressureBridge();
+	UavcanAtmosBridge(uavcan::INode &node);
 
 	const char *get_name() const override { return NAME; }
 
 	int init() override;
 
-	int ioctl(device::file_t *filp, int cmd, unsigned long arg) override;
-
-	int _class_instance;
-
 private:
-	float _diff_pres_offset{0.f};
+	float _temperature {0.0f};
+	float _humidity    {0.0f};
 
-	math::LowPassFilter2p _filter{12.f, 1.2f}; /// Adapted from MS5525 driver
 
-	void air_sub_cb(const uavcan::ReceivedDataStructure<uavcan::equipment::air_data::RawAirData> &msg);
+	void atmos_sub_cb(const uavcan::ReceivedDataStructure<cuav::equipment::atmos::Atmosphere> &msg);
 
-	typedef uavcan::MethodBinder < UavcanDifferentialPressureBridge *,
-		void (UavcanDifferentialPressureBridge::*)
-		(const uavcan::ReceivedDataStructure<uavcan::equipment::air_data::RawAirData> &) >
-		AirCbBinder;
+	typedef uavcan::MethodBinder < UavcanAtmosBridge *,
+		void (UavcanAtmosBridge::*)
+		(const uavcan::ReceivedDataStructure<cuav::equipment::atmos::Atmosphere> &) >
+		AtmosCbBinder;
 
-	uavcan::Subscriber<uavcan::equipment::air_data::RawAirData, AirCbBinder> _sub_air;
+	uavcan::Subscriber<cuav::equipment::atmos::Atmosphere, AtmosCbBinder> _sub_atmos;
 };
+
+
+

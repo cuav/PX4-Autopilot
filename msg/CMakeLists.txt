@@ -42,6 +42,7 @@ set(msg_files
 	airspeed.msg
 	airspeed_validated.msg
 	airspeed_wind.msg
+	atmos.msg
 	battery_status.msg
 	camera_capture.msg
 	camera_trigger.msg
