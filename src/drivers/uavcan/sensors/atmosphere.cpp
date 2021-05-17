@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (c) 2020 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2021 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,48 +31,59 @@
  *
  ****************************************************************************/
 
-/**
- * @author Jacob Crabill <jacob@flyvoly.com>
- */
+#include "atmosphere.hpp"
+#include <drivers/drv_hrt.h>
+#include <lib/ecl/geo/geo.h>
+#include <parameters/param.h>
+#include <systemlib/err.h>
 
-#pragma once
 
-#include <uORB/uORB.h>
-#include <uORB/topics/differential_pressure.h>
-#include <mathlib/math/filter/LowPassFilter2p.hpp>
-#include <lib/drivers/device/device.h>
-#include "sensor_bridge.hpp"
+const char *const UavcanAtmosBridge::NAME = "atmos_sensor";
 
-#include <uavcan/equipment/air_data/RawAirData.hpp>
-
-class UavcanDifferentialPressureBridge : public UavcanSensorBridgeBase, public cdev::CDev
+UavcanAtmosBridge::UavcanAtmosBridge(uavcan::INode &node) :
+	UavcanSensorBridgeBase("uavcan_atmos_sensor", ORB_ID(atmos)),
+	_sub_atmos(node)
 {
-public:
-	static const char *const NAME;
+}
 
-	UavcanDifferentialPressureBridge(uavcan::INode &node);
 
-	~UavcanDifferentialPressureBridge();
+int UavcanAtmosBridge::init()
+{
 
-	const char *get_name() const override { return NAME; }
 
-	int init() override;
+	int res = _sub_atmos.start(AtmosCbBinder(this, &UavcanAtmosBridge::atmos_sub_cb));
 
-	int ioctl(device::file_t *filp, int cmd, unsigned long arg) override;
+	if (res < 0) {
+		DEVICE_LOG("failed to start uavcan sub: %d", res);
+		return res;
+	}
 
-	int _class_instance;
+	return 0;
+}
 
-private:
-	float _diff_pres_offset{0.f};
+void UavcanAtmosBridge::atmos_sub_cb(const
+				     uavcan::ReceivedDataStructure<cuav::equipment::atmos::Atmosphere>
+				     &msg)
+{
 
-	math::LowPassFilter2p _filter{12.f, 1.2f};/// Adapted from MS5525 driver
 
-	void air_sub_cb(const uavcan::ReceivedDataStructure<uavcan::equipment::air_data::RawAirData> &msg);
+	float humidity = msg.humidity;
+	float temperature_c = msg.temperature + CONSTANTS_ABSOLUTE_NULL_CELSIUS;
 
-	typedef uavcan::MethodBinder < UavcanDifferentialPressureBridge *,
-		void (UavcanDifferentialPressureBridge::*)
-		(const uavcan::ReceivedDataStructure<uavcan::equipment::air_data::RawAirData> &) >
-		AirCbBinder;
+	printf("msg.humidity = %f\n", (double)msg.humidity);
+	printf("msg.temperature = %f\n", (double)msg.temperature);
 
-	uavcan::Subscriber<uavcan::equipment::air_data::RawAirData, AirCbBinder> _sub_air;
-};
+	printf("humidity = %f\n", (double)humidity);
+	printf("temperature_c = %f\n", (double)temperature_c);
+
+	atmos_s report = {
+		.timestamp = hrt_absolute_time(),
+		.temperature = temperature_c,
+		.humidity  = humidity,
+	};
+
+
+
+	publish(msg.getSrcNodeID().get(), &report);
+}
+

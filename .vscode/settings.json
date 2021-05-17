@@ -3,15 +3,6 @@
         "astyle.c.enable": true,
         "astyle.cpp.enable": true,
         "breadcrumbs.enabled": true,
-        "C_Cpp.autoAddFileAssociations": false,
-        "C_Cpp.clang_format_fallbackStyle": "none",
-        "C_Cpp.default.browse.limitSymbolsToIncludedHeaders": true,
-        "C_Cpp.default.cppStandard": "c++14",
-        "C_Cpp.default.cStandard": "c11",
-        "C_Cpp.formatting": "Disabled",
-        "C_Cpp.intelliSenseEngine": "Default",
-        "C_Cpp.vcpkg.enabled": false,
-        "C_Cpp.workspaceParsingPriority": "low",
         "cmake.buildBeforeRun": true,
         "cmake.buildDirectory": "${workspaceFolder}/build/${variant:CONFIG}",
         "cmake.buildTask": true,
@@ -137,5 +128,18 @@
         "workbench.settings.enableNaturalLanguageSearch": false,
         "yaml.schemas": {
                 "${workspaceFolder}/validation/module_schema.yaml": "${workspaceFolder}/src/modules/*/module.yaml"
-        }
+        },
+        "clangd.arguments": [
+                "--compile-commands-dir=${workspaceRoot}/build/cuav_nora_default",
+                "--completion-style=detailed",
+                "--header-insertion=never",
+                "-j=1",
+                "--pch-storage=disk"
+        ],
+        "clangd.onConfigChanged": "restart",
+        "C_Cpp.autoAddFileAssociations": false,
+        "C_Cpp.autocomplete": "Disabled",
+        "C_Cpp.errorSquiggles": "Disabled",
+        "C_Cpp.intelliSenseMemoryLimit": 256,
+        "C_Cpp.workspaceParsingPriority": "low"
 }

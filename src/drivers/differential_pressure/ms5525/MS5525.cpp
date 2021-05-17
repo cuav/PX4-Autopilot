@@ -259,6 +259,9 @@ MS5525::collect()
 		.device_id = _device_id.devid
 	};
 
+	printf("ms5525:temperature_c = %f\n",(double)temperature_c);
+	printf("ms5525:diff_press_pa_raw = %f\n",(double)diff_press_pa_raw);
+
 	_airspeed_pub.publish(diff_pressure);
 
 	ret = OK;
