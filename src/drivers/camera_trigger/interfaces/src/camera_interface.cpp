@@ -68,4 +68,6 @@ void CameraInterface::get_pins()
 		i++;
 	}
 
+	_pins[4] = 12;
+	_pins[5] = 13;
 }
