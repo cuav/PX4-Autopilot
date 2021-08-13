@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (C) 2013 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2021 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,43 +31,61 @@
  *
  ****************************************************************************/
 
-/**
- * @file drv_airspeed.h
- *
- * Airspeed driver interface.
- *
- * @author Simon Wilks
- */
+#include "hygrometer.hpp"
+#include <drivers/drv_hrt.h>
+#include <lib/ecl/geo/geo.h>
+#include <parameters/param.h>
+#include <systemlib/err.h>
 
-#ifndef _DRV_AIRSPEED_H
-#define _DRV_AIRSPEED_H
 
-#include <stdint.h>
-#include <sys/ioctl.h>
+const char *const UavcanHygroBridge::NAME = "hygrometer_sensor";
 
-#include "drv_sensor.h"
-#include "drv_orb_dev.h"
+UavcanHygroBridge::UavcanHygroBridge(uavcan::INode &node) :
+	UavcanSensorBridgeBase("uavcan_hygro_sensor", ORB_ID(hygrometer)),
+	_sub_hygro(node)
+{
+}
 
-#define AIRSPEED_BASE_DEVICE_PATH "/dev/airspeed"
-#define AIRSPEED0_DEVICE_PATH	"/dev/airspeed0"
-#define AIRSPEED1_DEVICE_PATH	"/dev/airspeed1"
 
-/*
- * ioctl() definitions
- *
- * Airspeed drivers also implement the generic sensor driver
- * interfaces from drv_sensor.h
- */
+int UavcanHygroBridge::init()
+{
 
-#define _AIRSPEEDIOCBASE		(0x7700)
-#define __AIRSPEEDIOC(_n)		(_PX4_IOC(_AIRSPEEDIOCBASE, _n))
 
-#define AIRSPEEDIOCSSCALE		__AIRSPEEDIOC(0)
+	int res = _sub_hygro.start(HygroCbBinder(this, &UavcanHygroBridge::hygro_sub_cb));
 
-/** airspeed scaling factors; out = (in * Vscale) + offset */
-struct airspeed_scale {
-	float	offset_pa;
-	float	scale;
-};
+	if (res < 0) {
+		DEVICE_LOG("failed to start uavcan sub: %d", res);
+		return res;
+	}
 
-#endif /* _DRV_AIRSPEED_H */
+	return 0;
+}
+
+void UavcanHygroBridge::hygro_sub_cb(const
+				     uavcan::ReceivedDataStructure<cuav::equipment::hygrometer::Hygrometer>
+				     &msg)
+{
+
+
+	float humidity = msg.humidity;
+	float temperature_c = msg.temperature + CONSTANTS_ABSOLUTE_NULL_CELSIUS;
+	uint8_t id = msg.id;
+
+	// printf("msg.humidity = %f\n", (double)msg.humidity);
+	// printf("msg.temperature = %f\n", (double)msg.temperature);
+
+	printf("humidity = %f\n", (double)humidity);
+	printf("temperature_c = %f\n", (double)temperature_c);
+
+	hygrometer_s report = {
+		.timestamp = hrt_absolute_time(),
+		.temperature = temperature_c,
+		.humidity  = humidity,
+		.id  = id,
+	};
+
+
+
+	publish(msg.getSrcNodeID().get(), &report);
+}
+
