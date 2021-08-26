@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (c) 2020 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2021 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,48 +31,34 @@
  *
  ****************************************************************************/
 
-/**
- * @author Jacob Crabill <jacob@flyvoly.com>
- */
-
-#pragma once
-
-#include <uORB/uORB.h>
-#include <uORB/topics/differential_pressure.h>
-#include <mathlib/math/filter/LowPassFilter2p.hpp>
-#include <lib/drivers/device/device.h>
+#include <uORB/topics/hygrometer.h>
 #include "sensor_bridge.hpp"
+#include <cuav/equipment/hygrometer/Hygrometer.hpp>
 
-#include <uavcan/equipment/air_data/RawAirData.hpp>
 
-class UavcanDifferentialPressureBridge : public UavcanSensorBridgeBase, public cdev::CDev
+class UavcanHygrometerBridge : public UavcanSensorBridgeBase
 {
 public:
 	static const char *const NAME;
 
-	UavcanDifferentialPressureBridge(uavcan::INode &node);
-
-	~UavcanDifferentialPressureBridge();
+	UavcanHygrometerBridge(uavcan::INode &node);
 
 	const char *get_name() const override { return NAME; }
 
 	int init() override;
 
 private:
-	float _diff_pres_offset{0.f};
+	float _temperature {0.0f};
+	float _humidity    {0.0f};
+	float _id  {0};
 
-	int _class_instance;
 
-	int ioctl(device::file_t *filp, int cmd, unsigned long arg) override;
+	void hygro_sub_cb(const uavcan::ReceivedDataStructure<cuav::equipment::hygrometer::Hygrometer> &msg);
 
-	math::LowPassFilter2p<float> _filter{10.f, 1.1f}; /// Adapted from MS5525 driver
+	typedef uavcan::MethodBinder < UavcanHygrometerBridge *,
+		void (UavcanHygrometerBridge::*)
+		(const uavcan::ReceivedDataStructure<cuav::equipment::hygrometer::Hygrometer> &) >
+		HygroCbBinder;
 
-	void air_sub_cb(const uavcan::ReceivedDataStructure<uavcan::equipment::air_data::RawAirData> &msg);
-
-	typedef uavcan::MethodBinder < UavcanDifferentialPressureBridge *,
-		void (UavcanDifferentialPressureBridge::*)
-		(const uavcan::ReceivedDataStructure<uavcan::equipment::air_data::RawAirData> &) >
-		AirCbBinder;
-
-	uavcan::Subscriber<uavcan::equipment::air_data::RawAirData, AirCbBinder> _sub_air;
+	uavcan::Subscriber<cuav::equipment::hygrometer::Hygrometer, HygroCbBinder> _sub_hygro;
 };

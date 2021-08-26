@@ -78,6 +78,7 @@ int do_airspeed_calibration(orb_advert_t *mavlink_log_pub)
 
 	int diff_pres_sub = orb_subscribe(ORB_ID(differential_pressure));
 	struct differential_pressure_s diff_pres;
+	struct differential_pressure_s diff_pres_id;
 
 	float diff_pres_offset = 0.0f;
 
@@ -87,8 +88,17 @@ int do_airspeed_calibration(orb_advert_t *mavlink_log_pub)
 		1.0f,
 	};
 
+	orb_copy(ORB_ID(differential_pressure), diff_pres_sub, &diff_pres_id);
+
+	// printf("diff_pres.device_id = %d\n",(int)diff_pres_id.device_id);
+	// printf("diff_pres.device_id >>16 = %d\n", ((diff_pres_id.device_id >> 16) & 0xFF));
+	const char *dev = (((diff_pres_id.device_id >> 16) & 0xFF) == DRV_DIFF_PRESS_DEVTYPE_UAVCAN) ? AIRSPEED0_DEVICE_PATH :
+			  AIRSPEED1_DEVICE_PATH;
+	printf(" dev = %s\n", dev);
+
 	bool paramreset_successful = false;
-	int  fd = px4_open(AIRSPEED0_DEVICE_PATH, 0);
+	int  fd = px4_open(dev, 0);
+	printf("fd = %d\n", fd);
 
 	if (fd >= 0) {
 		if (PX4_OK == px4_ioctl(fd, AIRSPEEDIOCSSCALE, (long unsigned int)&airscale)) {
@@ -164,8 +174,12 @@ int do_airspeed_calibration(orb_advert_t *mavlink_log_pub)
 	diff_pres_offset = diff_pres_offset / calibration_count;
 
 	if (PX4_ISFINITE(diff_pres_offset)) {
+		const char *dev_scale = (((diff_pres.device_id >> 16) & 0xFF) == DRV_DIFF_PRESS_DEVTYPE_UAVCAN) ?
+					AIRSPEED0_DEVICE_PATH : AIRSPEED1_DEVICE_PATH;
+		// printf("diff_pres.device_id >>16 = %d\n", ((diff_pres.device_id >> 16) & 0xFF));
+		// printf(" dev_scale = %s\n", dev_scale);
 
-		int fd_scale = px4_open(AIRSPEED0_DEVICE_PATH, 0);
+		int fd_scale = px4_open(dev_scale, 0);
 		airscale.offset_pa = diff_pres_offset;
 
 		if (fd_scale >= 0) {

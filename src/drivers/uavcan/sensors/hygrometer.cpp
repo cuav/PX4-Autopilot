@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (c) 2020 PX4 Development Team. All rights reserved.
+ *   Copyright (c) 2021 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,48 +31,56 @@
  *
  ****************************************************************************/
 
-/**
- * @author Jacob Crabill <jacob@flyvoly.com>
- */
+#include "hygrometer.hpp"
+#include <drivers/drv_hrt.h>
+#include <lib/ecl/geo/geo.h>
+#include <parameters/param.h>
+#include <systemlib/err.h>
 
-#pragma once
+const char *const UavcanHygrometerBridge::NAME = "hygrometer_sensor";
 
-#include <uORB/uORB.h>
-#include <uORB/topics/differential_pressure.h>
-#include <mathlib/math/filter/LowPassFilter2p.hpp>
-#include <lib/drivers/device/device.h>
-#include "sensor_bridge.hpp"
-
-#include <uavcan/equipment/air_data/RawAirData.hpp>
-
-class UavcanDifferentialPressureBridge : public UavcanSensorBridgeBase, public cdev::CDev
+UavcanHygrometerBridge::UavcanHygrometerBridge(uavcan::INode &node) :
+	UavcanSensorBridgeBase("uavcan_hygrometer_sensor", ORB_ID(hygrometer)),
+	_sub_hygro(node)
 {
-public:
-	static const char *const NAME;
+}
 
-	UavcanDifferentialPressureBridge(uavcan::INode &node);
+int UavcanHygrometerBridge::init()
+{
 
-	~UavcanDifferentialPressureBridge();
 
-	const char *get_name() const override { return NAME; }
+	int res = _sub_hygro.start(HygroCbBinder(this, &UavcanHygrometerBridge::hygro_sub_cb));
 
-	int init() override;
+	if (res < 0) {
+		DEVICE_LOG("failed to start uavcan sub: %d", res);
+		return res;
+	}
 
-private:
-	float _diff_pres_offset{0.f};
+	return 0;
+}
 
-	int _class_instance;
+void UavcanHygrometerBridge::hygro_sub_cb(const
+		uavcan::ReceivedDataStructure<cuav::equipment::hygrometer::Hygrometer>
+		&msg)
+{
 
-	int ioctl(device::file_t *filp, int cmd, unsigned long arg) override;
 
-	math::LowPassFilter2p<float> _filter{10.f, 1.1f}; /// Adapted from MS5525 driver
+	float humidity = msg.humidity;
+	float temperature_c = msg.temperature + CONSTANTS_ABSOLUTE_NULL_CELSIUS;
+	uint8_t id = msg.id;
 
-	void air_sub_cb(const uavcan::ReceivedDataStructure<uavcan::equipment::air_data::RawAirData> &msg);
+	// printf("msg.humidity = %f\n", (double)msg.humidity);
+	// printf("msg.temperature = %f\n", (double)msg.temperature);
 
-	typedef uavcan::MethodBinder < UavcanDifferentialPressureBridge *,
-		void (UavcanDifferentialPressureBridge::*)
-		(const uavcan::ReceivedDataStructure<uavcan::equipment::air_data::RawAirData> &) >
-		AirCbBinder;
+	printf("humidity = %f\n", (double)humidity);
+	printf("temperature_c = %f\n", (double)temperature_c);
 
-	uavcan::Subscriber<uavcan::equipment::air_data::RawAirData, AirCbBinder> _sub_air;
-};
+	hygrometer_s report = {
+		.timestamp = hrt_absolute_time(),
+		.temperature = temperature_c,
+		.humidity  = humidity,
+		.id  = id,
+	};
+
+	publish(msg.getSrcNodeID().get(), &report);
+}
