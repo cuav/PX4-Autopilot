@@ -1,0 +1,5 @@
+menuconfig DRIVERS_IMU_INVENSENSE_IAM20685
+	bool "iam20685"
+	default n
+	---help---
+		Enable support for iam20685
