@@ -103,8 +103,8 @@ else
 				bmi088 -A -R 0 -s start
 				bmi088 -G -R 0 -s start
 			else
-				bmi088 -A -R 4 -s start
-				bmi088 -G -R 4 -s start
+				# bmi088 -A -R 4 -s start
+				# bmi088 -G -R 4 -s start
 			fi
 		fi
 	fi
@@ -118,7 +118,8 @@ else
 		then
 			icm42688p -R 14 -s start
 		else
-			icm42688p -R 6 -s start
+			# icm42688p -R 6 -s start //TODO: CUAV 2024 v6x 临时写在这里 确定版本号在换位置
+			iim42652 -R 6 -s start
 		fi
 	fi
 
@@ -132,7 +133,8 @@ else
 			icm20602 -R 6 -s start
 		else
 			# Internal SPI bus ICM-20649 (hard-mounted)
-			icm20649 -R 14 -s start
+			# icm20649 -R 14 -s start // TODO: CUAV 2024 v6x 临时写在这里 确定版本号在换位置
+			# icm45686 -R 2 -s start
 		fi
 	fi
 fi
@@ -163,7 +165,8 @@ fi
 #external baro
 if ver hwtypecmp V6X001
 then
-	icp201xx -X start
+	# icp201xx -X start // TODO: CUAV 2024 v6x 临时写在这里 确定版本号在换位置
+	bmp581 -b 2 -X -a 0x47 start
 else
 	bmp388 -X start
 fi
