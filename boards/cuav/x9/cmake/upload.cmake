@@ -1,6 +1,6 @@
 ############################################################################
 #
-#   Copyright (c) 2017-2021 PX4 Development Team. All rights reserved.
+#   Copyright (c) 2023 PX4 Development Team. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -31,15 +31,19 @@
 #
 ############################################################################
 
-add_subdirectory(akm)
-add_subdirectory(bosch)
-add_subdirectory(hmc5883)
-add_subdirectory(qmc5883l)
-add_subdirectory(isentek)
-add_subdirectory(lis3mdl)
-add_subdirectory(lsm303agr)
-add_subdirectory(memsic)
-add_subdirectory(rm3100)
-add_subdirectory(st)
-add_subdirectory(tdk)
-add_subdirectory(vtrantech)
+
+set(PX4_FW_NAME ${PX4_BINARY_DIR}/${PX4_BOARD_VENDOR}_${PX4_BOARD_MODEL}_${PX4_BOARD_LABEL}.px4)
+
+add_custom_target(upload_skynode_usb
+	COMMAND ${PX4_SOURCE_DIR}/Tools/auterion/upload_skynode.sh --file=${PX4_FW_NAME}
+	DEPENDS ${PX4_FW_NAME}
+	COMMENT "Uploading PX4"
+	USES_TERMINAL
+)
+
+add_custom_target(upload_skynode_wifi
+	COMMAND ${PX4_SOURCE_DIR}/Tools/auterion/upload_skynode.sh --file=${PX4_FW_NAME} --wifi
+	DEPENDS ${PX4_FW_NAME}
+	COMMENT "Uploading PX4"
+	USES_TERMINAL
+)

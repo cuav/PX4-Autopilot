@@ -1,0 +1,5 @@
+menuconfig DRIVERS_MAGNETOMETER_TDK_ICT15318
+	bool "ICT15318"
+	default n
+	---help---
+		Enable support for isentek ICT15318
