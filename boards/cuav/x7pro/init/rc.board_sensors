@@ -7,7 +7,8 @@ board_adc start
 # SPI1
 if ! icm20689 -s -b 1 -R 2 -q start
 then
-	adis16470 -s -b 1 -R 2 start
+	# adis16470 -s -b 1 -R 2 start
+	adis16477 -s -b 1 -R 27 start
 fi
 
 # SPI2

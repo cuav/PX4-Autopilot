@@ -1,6 +1,6 @@
 ############################################################################
 #
-#   Copyright (c) 2017-2021 PX4 Development Team. All rights reserved.
+#   Copyright (c) 2022 PX4 Development Team. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -30,17 +30,19 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 ############################################################################
-
-add_subdirectory(akm)
-add_subdirectory(bosch)
-add_subdirectory(hmc5883)
-add_subdirectory(qmc5883l)
-add_subdirectory(qmc5883p)
-add_subdirectory(isentek)
-add_subdirectory(lis3mdl)
-add_subdirectory(lsm303agr)
-add_subdirectory(memsic)
-add_subdirectory(rm3100)
-add_subdirectory(st)
-add_subdirectory(tdk)
-add_subdirectory(vtrantech)
+px4_add_module(
+	MODULE drivers__imu__invensense__iam20685
+	MAIN iam20685
+	COMPILE_FLAGS
+		${MAX_CUSTOM_OPT_LEVEL}
+		#-DDEBUG_BUILD
+	SRCS
+		iam20685_main.cpp
+		IAM20685.cpp
+		IAM20685.hpp
+		InvenSense_IAM20685_registers.hpp
+	DEPENDS
+		px4_work_queue
+		drivers_accelerometer
+		drivers_gyroscope
+	)

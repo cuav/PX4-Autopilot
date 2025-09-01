@@ -1,6 +1,6 @@
 ############################################################################
 #
-#   Copyright (c) 2017-2021 PX4 Development Team. All rights reserved.
+#   Copyright (c) 2022 PX4 Development Team. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -31,16 +31,17 @@
 #
 ############################################################################
 
-add_subdirectory(akm)
-add_subdirectory(bosch)
-add_subdirectory(hmc5883)
-add_subdirectory(qmc5883l)
-add_subdirectory(qmc5883p)
-add_subdirectory(isentek)
-add_subdirectory(lis3mdl)
-add_subdirectory(lsm303agr)
-add_subdirectory(memsic)
-add_subdirectory(rm3100)
-add_subdirectory(st)
-add_subdirectory(tdk)
-add_subdirectory(vtrantech)
+px4_add_module(
+	MODULE drivers__imu__analog_devices__adis16607
+	MAIN adis16607
+	COMPILE_FLAGS
+	SRCS
+		ADIS16607.cpp
+		ADIS16607.hpp
+		adis16607_main.cpp
+		Analog_Devices_ADIS16607_registers.hpp
+	DEPENDS
+		drivers_accelerometer
+		drivers_gyroscope
+		px4_work_queue
+	)
